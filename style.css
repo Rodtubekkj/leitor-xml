@@ -119,3 +119,23 @@
       background: linear-gradient(90deg, var(--verde) 0%, var(--azul) 100%);
       transform: scale(0.98);
     }
+/* Efeito visual para notas descarregadas */
+    tr.descarregada {
+  background-color: #fff6b3 !important; /* fundo amarelo suave */
+  transition: background-color 0.8s ease;
+    }
+
+/* Animação de destaque ao marcar */
+   @keyframes destaqueDescarregada {
+    0% {
+    background-color: #fffacd; /* início com amarelo mais forte */
+  }
+  100% {
+    background-color: #fff6b3; /* suaviza para amarelo claro */
+  }
+}
+
+tr.descarregada.ativar-animacao {
+  animation: destaqueDescarregada 1s ease;
+}
+

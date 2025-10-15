@@ -185,6 +185,14 @@
           nota.descarregada = e.target.checked;
           salvarNotas(notas);
           renderizarTabela(document.getElementById('filtroStatus').value);
+         
+          setTimeout(() => {
+        const linha = document.querySelector(`input[data-idx="${idx}"]`)?.closest('tr');
+        if (linha && nota.descarregada) {
+          linha.classList.add('descarregada', 'ativar-animacao');
+          setTimeout(() => linha.classList.remove('ativar-animacao'), 1000);
+  }
+}, 100);
         }
       }
     });
@@ -268,3 +276,4 @@
   </script>
 </body>
 </html>
+

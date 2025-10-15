@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -8,22 +9,25 @@
 </head>
 <body>
   <header>
-  <img src="img/logo-dulcini.avif" alt="Dulcini" style="max-width:220px;max-height:70px;margin-bottom:0.3em;">
+    <img src="img/logo-dulcini.avif" alt="Dulcini" style="max-width:220px;max-height:70px;margin-bottom:0.3em;">
     <h2>Leitor de XML de Nota Fiscal</h2> 
   </header>
   <main>
-  <p>Selecione um ou mais arquivos XML de nota fiscal para extrair os dados:</p>
-  <button id="btnLimpar" style="float:right;margin-bottom:1em;background:#c82333;color:#fff;font-weight:bold;border:none;padding:0.5em 1.2em;border-radius:6px;cursor:pointer;">Apagar todas as informações</button>
-  <div>  
-    <label for="xmlInput" class="custom-file-label" tabindex="0">Escolher arquivos XML</label>
-    <input type="file" id="xmlInput" multiple accept=".xml">
-  </div>
+    <p>Selecione um ou mais arquivos XML de nota fiscal para extrair os dados:</p>
+    <button id="btnLimpar" style="float:right;margin-bottom:1em;background:#c82333;color:#fff;font-weight:bold;border:none;padding:0.5em 1.2em;border-radius:6px;cursor:pointer;">Apagar todas as informações</button>
+    
+    <div>  
+      <label for="xmlInput" class="custom-file-label" tabindex="0">Escolher arquivos XML</label>
+      <input type="file" id="xmlInput" multiple accept=".xml">
+    </div>
+
     <label for="filtroStatus">Filtrar por status:</label>
     <select id="filtroStatus">
       <option value="todos">Todos</option>
       <option value="pendente">Pendentes</option>
       <option value="descarregado">Descarregadas</option>
     </select>
+
     <table id="resultTable" style="display:none;">
       <thead>
         <tr>
@@ -33,7 +37,7 @@
           <th>Peso Líquido (t)</th>
           <th>Valor Unitário</th>
           <th>Valor Total</th>
-          <th style="white-space:'white-space-collapse';">
+          <th>
             Data de Emissão
             <input type="date" id="filtroData" style="font-size:0.95em;max-width:120px;display:inline-block;margin-left:0.5em;vertical-align:middle;">
           </th>
@@ -43,119 +47,123 @@
       <tbody></tbody>
     </table>
   </main>
+
   <script>
-    // Animação de clique via teclado para acessibilidade
+    // Verifica se localStorage está disponível
+    let storageAtivo = true;
+    try {
+      localStorage.setItem('testeLocalStorage', 'ok');
+      localStorage.removeItem('testeLocalStorage');
+    } catch (e) {
+      storageAtivo = false;
+      alert("⚠️ Atenção: O armazenamento local (localStorage) está bloqueado neste navegador. As notas não serão salvas.");
+    }
+
+    // Funções utilitárias com tratamento de erro
+    function salvarNotas(notas) {
+      if (!storageAtivo) return;
+      try {
+        localStorage.setItem('notasNFe', JSON.stringify(notas));
+      } catch (e) {
+        alert("❌ Erro ao salvar dados no armazenamento local:\n" + e.message);
+      }
+    }
+
+    function carregarNotas() {
+      if (!storageAtivo) return [];
+      try {
+        return JSON.parse(localStorage.getItem('notasNFe') || '[]');
+      } catch (e) {
+        alert("❌ Erro ao carregar notas salvas:\n" + e.message);
+        return [];
+      }
+    }
+
     document.querySelector('.custom-file-label').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' || e.key === ' ') {
         document.getElementById('xmlInput').click();
       }
     });
+
     document.getElementById('btnLimpar').onclick = function() {
       if (confirm('Tem certeza que deseja apagar todas as informações?')) {
-        localStorage.removeItem('notasNFe');
+        if (storageAtivo) localStorage.removeItem('notasNFe');
         renderizarTabela();
         document.getElementById('filtroData').value = '';
         document.getElementById('filtroStatus').value = 'todos';
       }
     };
-    // Utilidades para persistência local
-    function salvarNotas(notas) {
-      localStorage.setItem('notasNFe', JSON.stringify(notas));
-    }
-    function carregarNotas() {
-      return JSON.parse(localStorage.getItem('notasNFe') || '[]');
-    }
 
-    // Não precisa mais atualizar select, pois agora é input type=date
+    function renderizarTabela(filtroStatus = 'todos', filtroData = '') {
+      try {
+        const table = document.getElementById('resultTable');
+        const tbody = table.querySelector('tbody');
+        const notas = carregarNotas();
+        tbody.innerHTML = '';
+        let notasFiltradas = notas;
+        if (filtroStatus === 'pendente') notasFiltradas = notasFiltradas.filter(n => !n.descarregada);
+        if (filtroStatus === 'descarregado') notasFiltradas = notasFiltradas.filter(n => n.descarregada);
+        if (filtroData) notasFiltradas = notasFiltradas.filter(n => n.dataEmissao === filtroData);
 
-  function renderizarTabela(filtroStatus = 'todos', filtroData = '') {
-      const table = document.getElementById('resultTable');
-      const tbody = table.querySelector('tbody');
-      const notas = carregarNotas();
-      tbody.innerHTML = '';
-      let notasFiltradas = notas;
-      if (filtroStatus === 'pendente') notasFiltradas = notasFiltradas.filter(n => !n.descarregada);
-      if (filtroStatus === 'descarregado') notasFiltradas = notasFiltradas.filter(n => n.descarregada);
-      if (filtroData) {
-        // filtroData formato yyyy-mm-dd, n.dataEmissao formato yyyy-mm-dd
-        notasFiltradas = notasFiltradas.filter(n => n.dataEmissao === filtroData);
-      }
-      if (notasFiltradas.length === 0) {
+        if (notasFiltradas.length === 0) {
+          table.style.display = '';
+          tbody.innerHTML = `<tr><td colspan="8" style="color:#888;background:#e6fff2;font-style:italic;">Nenhuma nota encontrada para o filtro selecionado.</td></tr>`;
+          return;
+        }
+
+        const usinas = {};
+        notasFiltradas.forEach(nota => {
+          if (!usinas[nota.usina]) usinas[nota.usina] = [];
+          usinas[nota.usina].push(nota);
+        });
         table.style.display = '';
-        tbody.innerHTML = `<tr><td colspan="8" style="color:#888;background:#e6fff2;font-style:italic;">Nenhuma nota encontrada para o filtro selecionado.</td></tr>`;
-        return;
-      }
-      // Agrupar por usina (nome fantasia)
-      const usinas = {};
-      notasFiltradas.forEach(nota => {
-        if (!usinas[nota.usina]) usinas[nota.usina] = [];
-        usinas[nota.usina].push(nota);
-      });
-      table.style.display = '';
-      // Calcular totais globais
-      let somaPeso = 0;
-      let somaValorTotal = 0;
-      let somaValorUnit = 0;
-      let countValorUnit = 0;
-      // Renderizar linhas das notas agrupadas por usina
-      Object.keys(usinas).forEach(usina => {
-        // Ordenar as notas dessa usina pelo número da nota (crescente)
-        usinas[usina].sort((a, b) => {
-          const nA = parseInt(a.numeroNota.replace(/\D/g, ''));
-          const nB = parseInt(b.numeroNota.replace(/\D/g, ''));
-          return nA - nB;
-        });
-        // Adicionar linha de separação/usina
-        const rowUsina = `<tr><td colspan="7" style="background:#e6fff2;color:#1a2a4a;font-weight:700;text-align:left;font-size:1.1em;">${usina}</td></tr>`;
-        tbody.insertAdjacentHTML('beforeend', rowUsina);
-        usinas[usina].forEach((nota, idx) => {
-          // Soma quantidade (peso líquido)
-          let peso = 0;
-          if (nota.pesoLiq) {
-            peso = parseFloat(nota.pesoLiq.replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(peso)) somaPeso += peso;
-          }
-          // Soma valor total
-          let vTot = 0;
-          if (nota.valorTot) {
-            vTot = parseFloat(nota.valorTot.replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(vTot)) somaValorTotal += vTot;
-          }
-          // Média valor unitário
-          let vUnit = 0;
-          if (nota.valorUnit) {
-            vUnit = parseFloat(nota.valorUnit.replace(/\./g, '').replace(',', '.'));
+
+        let somaPeso = 0, somaValorTotal = 0, somaValorUnit = 0, countValorUnit = 0;
+        Object.keys(usinas).forEach(usina => {
+          usinas[usina].sort((a, b) => parseInt(a.numeroNota) - parseInt(b.numeroNota));
+          const rowUsina = `<tr><td colspan="7" style="background:#e6fff2;color:#1a2a4a;font-weight:700;text-align:left;font-size:1.1em;">${usina}</td></tr>`;
+          tbody.insertAdjacentHTML('beforeend', rowUsina);
+
+          usinas[usina].forEach(nota => {
+            let peso = parseFloat((nota.pesoLiq || "0").replace(/\./g, '').replace(',', '.')) || 0;
+            somaPeso += peso;
+            let vTot = parseFloat((nota.valorTot || "0").replace(/\./g, '').replace(',', '.')) || 0;
+            somaValorTotal += vTot;
+            let vUnit = parseFloat((nota.valorUnit || "0").replace(/\./g, '').replace(',', '.')) || 0;
             if (!isNaN(vUnit)) { somaValorUnit += vUnit; countValorUnit++; }
-          }
-          const checked = nota.descarregada ? 'checked' : '';
-          const row = `<tr>
-            <td><input type="checkbox" data-idx="${nota.id}" ${checked}></td>
-            <td>${nota.numeroNota}</td>
-            <td>${nota.usina}</td>
-            <td>${nota.pesoLiq}</td>
-            <td>${nota.valorUnit}</td>
-            <td>${nota.valorTot}</td>
-            <td>${nota.dataEmissaoFormatada || ''}</td>
-            <td><button class="btn-apagar" data-id="${nota.id}" style="background:#fff0f0;color:#a00;border:1px solid #a00;padding:0.2em 0.7em;border-radius:5px;cursor:pointer;font-size:0.95em;">Apagar</button></td>
-          </tr>`;
-          tbody.insertAdjacentHTML('beforeend', row);
+
+            const checked = nota.descarregada ? 'checked' : '';
+            const row = `<tr>
+              <td><input type="checkbox" data-idx="${nota.id}" ${checked}></td>
+              <td>${nota.numeroNota}</td>
+              <td>${nota.usina}</td>
+              <td>${nota.pesoLiq}</td>
+              <td>${nota.valorUnit}</td>
+              <td>${nota.valorTot}</td>
+              <td>${nota.dataEmissaoFormatada || ''}</td>
+              <td><button class="btn-apagar" data-id="${nota.id}" style="background:#fff0f0;color:#a00;border:1px solid #a00;padding:0.2em 0.7em;border-radius:5px;cursor:pointer;font-size:0.95em;">Apagar</button></td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+          });
         });
-      });
-      // Adicionar linha de totais globais ao final da tabela
-      if (notasFiltradas.length > 0) {
-        const mediaValorUnit = countValorUnit > 0 ? somaValorUnit / countValorUnit : 0;
-        const linhaTotais = `<tr style="background:#f7f7e6;font-weight:700;">
-          <td colspan="1"></td>
-          <td colspan="2" style="text-align:right;">Totais Gerais:</td>
-          <td>${somaPeso.toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3})}</td>
-          <td>${mediaValorUnit.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-          <td>${somaValorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-          <td colspan="2"></td>
-        </tr>`;
-        tbody.insertAdjacentHTML('beforeend', linhaTotais);
+
+        if (notasFiltradas.length > 0) {
+          const mediaValorUnit = countValorUnit > 0 ? somaValorUnit / countValorUnit : 0;
+          const linhaTotais = `<tr style="background:#f7f7e6;font-weight:700;">
+            <td colspan="1"></td>
+            <td colspan="2" style="text-align:right;">Totais Gerais:</td>
+            <td>${somaPeso.toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3})}</td>
+            <td>${mediaValorUnit.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td>${somaValorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td colspan="2"></td>
+          </tr>`;
+          tbody.insertAdjacentHTML('beforeend', linhaTotais);
+        }
+      } catch (e) {
+        alert("❌ Erro ao renderizar tabela:\n" + e.message);
       }
-    // (Removido: delegação de evento única será feita fora do render)
-    // Delegação de evento única para apagar nota individualmente
+    }
+
     document.addEventListener('click', function(e) {
       if (e.target.classList && e.target.classList.contains('btn-apagar')) {
         if (confirm('Deseja apagar esta nota?')) {
@@ -167,9 +175,7 @@
         }
       }
     });
-    // Fim da função renderizarTabela
 
-    // Atualizar status ao clicar no checkbox
     document.getElementById('resultTable').addEventListener('change', function(e) {
       if (e.target.type === 'checkbox') {
         const idx = e.target.getAttribute('data-idx');
@@ -183,8 +189,6 @@
       }
     });
 
-    // Filtro
-
     document.getElementById('filtroStatus').addEventListener('change', function(e) {
       renderizarTabela(e.target.value, document.getElementById('filtroData').value);
     });
@@ -192,69 +196,75 @@
       renderizarTabela(document.getElementById('filtroStatus').value, e.target.value);
     });
 
-    // Carregar arquivos XML
     document.getElementById('xmlInput').addEventListener('change', function(event) {
       const files = event.target.files;
       if (files.length === 0) {
         renderizarTabela(document.getElementById('filtroStatus').value);
         return;
       }
-      let notas = carregarNotas();
-      let nextId = notas.length > 0 ? Math.max(...notas.map(n => n.id)) + 1 : 1;
-  Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(e.target.result, 'application/xml');
-          function getTag(pathArr) {
-            let el = xml.documentElement;
-            for (const tag of pathArr) {
-              el = el && (el.getElementsByTagName(tag)[0] || el.getElementsByTagName('nfe:' + tag)[0]);
+      try {
+        let notas = carregarNotas();
+        let nextId = notas.length > 0 ? Math.max(...notas.map(n => n.id)) + 1 : 1;
+
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const parser = new DOMParser();
+              const xml = parser.parseFromString(e.target.result, 'application/xml');
+              function getTag(pathArr) {
+                let el = xml.documentElement;
+                for (const tag of pathArr) {
+                  el = el && (el.getElementsByTagName(tag)[0] || el.getElementsByTagName('nfe:' + tag)[0]);
+                }
+                return el ? el.textContent : '';
+              }
+              const numeroNota = getTag(['ide','nNF']);
+              const dataEmissaoRaw = getTag(['ide','dhEmi']) || getTag(['ide','dEmi']);
+              let dataEmissao = '', dataEmissaoFormatada = '';
+              if (dataEmissaoRaw) {
+                let ano, mes, dia;
+                if (dataEmissaoRaw.includes('-')) {
+                  ano = dataEmissaoRaw.substring(0, 4);
+                  mes = dataEmissaoRaw.substring(5, 7);
+                  dia = dataEmissaoRaw.substring(8, 10);
+                } else {
+                  ano = dataEmissaoRaw.substring(0,4);
+                  mes = dataEmissaoRaw.substring(4,6);
+                  dia = dataEmissaoRaw.substring(6,8);
+                }
+                dataEmissao = `${ano}-${mes}-${dia}`;
+                dataEmissaoFormatada = `${dia}/${mes}/${ano}`;
+              }
+
+              const usina = getTag(['emit','xFant']);
+              let pesoLiq = getTag(['transp','vol','pesoL']);
+              let valorUnit = getTag(['det','prod','vUnCom']);
+              let valorTot = getTag(['det','prod','vProd']);
+              pesoLiq = pesoLiq ? (parseFloat(pesoLiq)/1000).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3}) : '';
+              valorUnit = valorUnit ? (Math.round(parseFloat(valorUnit)*1000)).toLocaleString('pt-BR') : '';
+              valorTot = valorTot ? (Math.round(parseFloat(valorTot))).toLocaleString('pt-BR') : '';
+
+              notas.push({
+                id: nextId++,
+                numeroNota, dataEmissao, dataEmissaoFormatada, usina, pesoLiq, valorUnit, valorTot,
+                descarregada: false
+              });
+              salvarNotas(notas);
+              renderizarTabela(document.getElementById('filtroStatus').value, document.getElementById('filtroData').value);
+            } catch (err) {
+              alert("❌ Erro ao ler o arquivo XML: " + file.name + "\n" + err.message);
             }
-            return el ? el.textContent : '';
-          }
-          const numeroNota = getTag(['ide','nNF']);
-          const dataEmissaoRaw = getTag(['ide','dhEmi']) || getTag(['ide','dEmi']);
-          let dataEmissao = '';
-          let dataEmissaoFormatada = '';
-          if (dataEmissaoRaw) {
-            // dhEmi: 2023-09-27T00:00:00-03:00 ou dEmi: 20230927
-            let ano, mes, dia;
-            if (dataEmissaoRaw.length >= 10 && dataEmissaoRaw.includes('-')) {
-              ano = dataEmissaoRaw.substring(0, 4);
-              mes = dataEmissaoRaw.substring(5, 7);
-              dia = dataEmissaoRaw.substring(8, 10);
-              dataEmissao = `${ano}-${mes}-${dia}`;
-              dataEmissaoFormatada = `${dia}/${mes}/${ano}`;
-            } else if (dataEmissaoRaw.length === 8) {
-              ano = dataEmissaoRaw.substring(0,4);
-              mes = dataEmissaoRaw.substring(4,6);
-              dia = dataEmissaoRaw.substring(6,8);
-              dataEmissao = `${ano}-${mes}-${dia}`;
-              dataEmissaoFormatada = `${dia}/${mes}/${ano}`;
-            }
-          }
-          const usina = getTag(['emit','xFant']);
-          let pesoLiq = getTag(['transp','vol','pesoL']);
-          let valorUnit = getTag(['det','prod','vUnCom']);
-          let valorTot = getTag(['det','prod','vProd']);
-          pesoLiq = pesoLiq ? (parseFloat(pesoLiq)/1000).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3}) : '';
-          valorUnit = valorUnit ? (Math.round(parseFloat(valorUnit)*1000)).toLocaleString('pt-BR') : '';
-          valorTot = valorTot ? (Math.round(parseFloat(valorTot))).toLocaleString('pt-BR') : '';
-          notas.push({
-            id: nextId++,
-            numeroNota, dataEmissao, dataEmissaoFormatada, usina, pesoLiq, valorUnit, valorTot,
-            descarregada: false
-          });
-          salvarNotas(notas);
-          renderizarTabela(document.getElementById('filtroStatus').value, document.getElementById('filtroData').value);
-        };
-        reader.readAsText(file);
-      });
+          };
+          reader.onerror = () => alert("❌ Erro ao abrir o arquivo: " + file.name);
+          reader.readAsText(file);
+        });
+      } catch (err) {
+        alert("❌ Erro inesperado ao processar arquivos:\n" + err.message);
+      }
     });
-  }
-    // Renderizar ao abrir a página
-  renderizarTabela();
+
+    renderizarTabela();
   </script>
 </body>
 </html>

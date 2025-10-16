@@ -238,13 +238,32 @@
           }
 
           const usina = getTag(['emit','xFant']);
-          let pesoLiq = getTag(['transp','vol','pesoL']);
+          let qCom = getTag(['det','prod','qCom']);
           let valorUnit = getTag(['det','prod','vUnCom']);
           let valorTot = getTag(['det','prod','vProd']);
+          let pesoLiq = qCom;
+          // usamos qCom como peso líquido padrão
 
-          pesoLiq = pesoLiq ? (parseFloat(pesoLiq)/1000).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3}) : '';
-          valorUnit = valorUnit ? (Math.round(parseFloat(valorUnit)*1000)).toLocaleString('pt-BR') : '';
-          valorTot = valorTot ? (Math.round(parseFloat(valorTot))).toLocaleString('pt-BR') : '';
+          // Convertendo para números reais
+          let qtd = parseFloat((qCom || '0').replace(',', '.'));
+          let vUnit = parseFloat((valorUnit || '0').replace(',', '.'));
+          let vTot = parseFloat((valorTot || '0').replace(',', '.'));
+
+          // Detectar se qCom está em kg ou toneladas
+            if (qtd > 1000) {
+          // tipo 1: qCom em kg, vUnCom em R$/kg
+            pesoLiq = qtd / 1000; // converter para toneladas
+            vUnit = vUnit * 1000; // converter R$/kg → R$/t
+            } else {
+          // tipo 2: qCom já em toneladas, vUnCom em R$/t
+            pesoLiq = qtd;
+}
+
+          // Formatando valores
+            pesoLiq = pesoLiq.toLocaleString('pt-BR', { minimumFractionDigits:3, maximumFractionDigits:3 });
+            valorUnit = vUnit.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+            valorTot = vTot.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+
 
           notas.push({
             id: nextId++,
@@ -264,3 +283,4 @@
   </script>
 </body>
 </html>
+

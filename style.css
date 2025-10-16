@@ -74,7 +74,7 @@ tr.usina-header td:hover {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 8px #0001;
-  margin-left: auto;
+  margin-left: 0;
     }
     th, td {
       padding: 0.8em 1em;
@@ -158,5 +158,6 @@ tr.usina-header td:hover {
       transform: scale(0.98);
 
     }
+
 
 

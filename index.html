@@ -276,9 +276,9 @@
 
               <td>${nota.pesoLiq}</td>
 
-              <td>${parseFloat(nota.valorUnit.replace(/\./g, '').replace(',', '.')).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+              <td>${nota.valorUnit}</td>
 
-              <td>${parseFloat(nota.valorTot.replace(/\./g, '').replace(',', '.')).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+              <td>${nota.valorTot}</td>
 
               <td>${nota.dataEmissaoFormatada || ''}</td>
 
@@ -306,9 +306,9 @@
 
             <td>${somaPeso.toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3})}</td>
 
-            <td>${mediaValorUnit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            <td>${mediaValorUnit.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
 
-            <td>${somaValorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            <td>${somaValorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
 
             <td colspan="2"></td>
 
@@ -532,9 +532,9 @@
 
     pesoLiq = pesoLiq.toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3});
 
-    valorUnit = valorUnit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    valorUnit = Math.round(valorUnit).toLocaleString('pt-BR');
 
-    valorTot = valorTot.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    valorTot = Math.round(valorTot).toLocaleString('pt-BR');
 
  
 
@@ -603,3 +603,5 @@
 </body>
 
 </html>
+
+ 

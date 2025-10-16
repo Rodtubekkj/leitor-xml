@@ -154,6 +154,24 @@ tbody tr:hover td {
   transition: background 0.3s;
 }
 
+/* ===== LINHAS DE AGRUPAMENTO DE USINA ===== */
+tr.usina-header td {
+  background: linear-gradient(90deg, var(--azul-claro) 0%, var(--azul) 100%);
+  color: var(--branco);
+  font-weight: 700;
+  text-align: left;
+  font-size: 1.05em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.9em 1em;
+  border-bottom: 2px solid #fff3;
+  transition: background 0.3s ease;
+}
+
+tr.usina-header:hover td {
+  background: linear-gradient(90deg, var(--azul) 0%, var(--azul-claro) 100%);
+}
+
 /* ===== CHECKBOX ===== */
 input[type="checkbox"] {
   transform: scale(1.2);
@@ -256,3 +274,4 @@ button:hover {
     font-size: 0.9em;
   }
 }
+

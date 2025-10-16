@@ -133,7 +133,7 @@ tr.usina-header td:hover {
      /* Botão customizado para input file */
   .custom-file-label {
   display: inline-block;
-  background: linear-gradient(90deg, var(--azul) 0%, var(--azul-claro) 100%);
+  background: linear-gradient(90deg, var(--verde-claro) 0%, var(--azul-claro) 100%);
   color: var(--branco);
   font-weight: 600;
   padding: 0.6em 1.5em;
@@ -163,6 +163,7 @@ tr.usina-header td:hover {
   transform: scale(0.97);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 
 
 

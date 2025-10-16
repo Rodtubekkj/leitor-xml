@@ -1,4 +1,4 @@
-/* 🎨 Paleta de cores base */
+
 :root {
   --azul: #1a2a4a;
   --azul-claro: #2e3e5c;
@@ -8,18 +8,6 @@
   --cinza: #f5f5f5;
   --azulino: #a9cbfdcc;
 }
-
-/* 🌙 Modo escuro automático */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --branco: #1b1f29;
-    --cinza: #10141c;
-    --azul: #bcd0ff;
-    --azul-claro: #9bb5e8;
-    --verde: #35e69b;
-    --verde-claro: #73ffb8;
-    --azulino: #2a3b6d;
-  }
 
   body {
     color: var(--branco);
@@ -36,7 +24,7 @@
   }
 }
 
-/* 🧱 Estrutura geral */
+
 body {
   font-family: 'Segoe UI', 'Arial Rounded MT Bold', Arial, sans-serif;
   margin: 0;
@@ -102,7 +90,7 @@ input[type="file"] {
   transform: scale(1.02);
 }
 
-/* 🧾 Tabela */
+/* Tabela */
 table {
   width: 100%;
   max-width: 1100px;
@@ -137,7 +125,7 @@ tr:last-child td {
   border-bottom: none;
 }
 
-/* 🏭 Cabeçalho de usina */
+/* Cabeçalho */
 tr.usina-header td {
   background: linear-gradient(90deg, var(--azul-claro) 0%, var(--azulino) 100%);
   color: var(--branco);
@@ -159,13 +147,13 @@ tr.usina-header td:hover {
   transform: scale(1.02);
 }
 
-/* 📦 Checkbox */
+/* Checkbox */
 input[type="checkbox"] {
   transform: scale(1.2);
   accent-color: var(--verde);
 }
 
-/* 📁 Botão customizado de upload */
+/* Botão customizado de upload */
 .custom-file-label {
   display: inline-block;
   background: linear-gradient(90deg, var(--azul) 0%, var(--verde) 100%);
@@ -194,15 +182,33 @@ input[type="checkbox"] {
   transform: scale(0.98);
 }
 
-/* 🧯 Botão “Apagar todas as informações” */
+/* Botão “Apagar todas as informações” */
 #btnLimpar {
   float: right;
   margin-bottom: 1em;
-  background: #c82333;
+  background: linear-gradient(90deg, #a30000 0%, #e63946 100%);
   color: #fff;
-  font-weight: bold;
+  font-weight: 600;
   border: none;
-  padding: 0.5em 1.2em;
-  border-radius: 6px;
+  padding: 0.6em 1.5em;
+  border-radius: 7px;
   cursor: pointer;
-  tra
+  font-size: 1.05em;
+  box-shadow: 0 2px 8px #0001;
+  transition: background 0.6s, transform 0.2s, box-shadow 0.2s;
+}
+
+/* Efeito hover e foco */
+#btnLimpar:hover,
+#btnLimpar:focus {
+  background: linear-gradient(90deg, #ff4d4d 0%, #c82333 100%);
+  transform: scale(1.04) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 0, 0, 0.25);
+}
+
+/* Efeito de clique */
+#btnLimpar:active {
+  background: linear-gradient(90deg, #c82333 0%, #7a0000 100%);
+  transform: scale(0.98);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}

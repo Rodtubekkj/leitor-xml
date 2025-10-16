@@ -510,20 +510,17 @@
 
     let vTot = parseFloat(valorTotalBruto.replace(',', '.')) || 0;
 
- 
+ // Detectar automaticamente o tipo da nota (nova ou antiga)
+let tipoNovo = false;
+if (vUnCom > 1000) {
+  tipoNovo = true; // valor unitário alto => R$/t
+} else if (vUnCom < 100 && qCom > 1000) {
+  tipoNovo = false; // valor unitário baixo e quantidade muito alta => kg
+}
 
-    // Detectar tipo da nota (antigo ou novo)
-
-    let tipoNovo = vUnCom > 1000;
-
- 
-
-    // Ajustar valores conforme tipo detectado
-
+// Ajustar valores conforme tipo detectado
     let pesoLiq = tipoNovo ? qCom : qCom / 1000;
-
     let valorUnit = tipoNovo ? vUnCom : vUnCom * 1000;
-
     let valorTot = vTot;
 
  
@@ -605,3 +602,4 @@
 </html>
 
  
+

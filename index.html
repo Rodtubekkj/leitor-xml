@@ -242,7 +242,7 @@
 
           usinas[usina].sort((a, b) => parseInt(a.numeroNota) - parseInt(b.numeroNota));
 
-          const rowUsina = `<tr><td colspan="7" style="background:#e6fff2;color:#1a2a4a;font-weight:700;text-align:left;font-size:1.1em;">${usina}</td></tr>`;
+          const rowUsina = `<tr class="usina-header"><td colspan="8">${usina}</td></tr>`;
 
           tbody.insertAdjacentHTML('beforeend', rowUsina);
 
@@ -602,4 +602,5 @@ if (vUnCom > 1000) {
 </html>
 
  
+
 

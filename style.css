@@ -1,188 +1,80 @@
-
 :root {
-  --azul: #1a2a4a;
-  --azul-claro: #2e3e5c;
-  --verde: #1bb36a;
-  --verde-claro: #3be88a;
+  --azul-principal: #0077b6;
+  --azul-claro: #00b4d8;
+  --verde: #2a9d8f;
   --branco: #ffffff;
-  --cinza: #f5f5f5;
-  --azulino: #a9cbfdcc;
+  --cinza-claro: #f8f9fa;
+  --cinza-medio: #e9ecef;
+  --cinza-escuro: #495057;
 }
-
-  body {
-    color: var(--branco);
-  }
-
-  table,
-  main {
-    background: #1d2535;
-    color: var(--branco);
-  }
-
-  th {
-    background: var(--azul-claro);
-  }
-}
-
 
 body {
-  font-family: 'Segoe UI', 'Arial Rounded MT Bold', Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--cinza-claro);
+  color: var(--cinza-escuro);
   margin: 0;
-  background: var(--cinza);
-  color: var(--azul);
-  line-height: 1.5;
+  padding: 0;
 }
 
-/* Cabeçalho */
+/* ===== Cabeçalho ===== */
 header {
-  background: var(--branco);
-  color: var(--azul);
-  padding: 2em 0 1em 0;
+  background: linear-gradient(90deg, var(--azul-principal), var(--azul-claro));
+  color: var(--branco);
+  padding: 1.5em 0;
   text-align: center;
-  box-shadow: 0 2px 8px #0001;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8em;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 header h2 {
-  font-size: 1.25em;
+  font-size: 1.1em;
   font-weight: 400;
   margin: 0;
-  color: var(--azul-claro);
-  letter-spacing: 1px;
+  color: var(--branco);
+  opacity: 0.9;
 }
 
-/* Conteúdo principal */
+/* ===== Container principal ===== */
 main {
-  max-width: 900px;
-  margin: 2em auto;
+  width: 90%;
+  max-width: 1100px;
+  margin: 30px auto;
   background: var(--branco);
-  border-radius: 12px;
-  box-shadow: 0 2px 16px #0002;
-  padding: 2em 2em 2.5em 2em;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 2em;
 }
 
-/* Filtros e inputs */
-label,
-select,
-input[type="text"],
-input[type="date"] {
-  font-size: 1em;
-  margin-right: 1em;
-  margin-bottom: 1em;
-}
-
-input[type="file"] {
+/* ===== Botões e inputs ===== */
+#fileInput {
   display: none;
 }
 
-#filtroStatus,
-#filtroData {
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  padding: 0.3em 0.7em;
-  background: #fafafa;
-  color: var(--azul);
-  transition: box-shadow 0.3s, transform 0.2s;
-}
-
-#filtroStatus:hover,
-#filtroData:hover {
-  box-shadow: 0 0 8px var(--azulino);
-  transform: scale(1.02);
-}
-
-/* Tabela */
-table {
-  width: 100%;
-  max-width: 1100px;
-  border-collapse: collapse;
-  background: var(--branco);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 8px #0001;
-  margin-top: 1em;
-}
-
-th,
-td {
-  padding: 0.8em 1em;
-  border-bottom: 1px solid #e0e0e0;
-  text-align: center;
-}
-
-th {
-  background: var(--azul-claro);
-  color: var(--branco);
-  font-weight: 600;
-  font-size: 1.05em;
-  letter-spacing: 1px;
-}
-
-tr:nth-child(even) td {
-  background: #f8f9fa;
-}
-
-tr:last-child td {
-  border-bottom: none;
-}
-
-/* Cabeçalho */
-tr.usina-header td {
-  background: linear-gradient(90deg, var(--azul-claro) 0%, var(--azulino) 100%);
-  color: var(--branco);
-  font-weight: 650;
-  text-align: left;
-  font-size: 0.9em;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 0.9em 1em;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
-  background-size: 200% 100%;
-  background-position: left center;
-  transition: background-position 0.6s ease, transform 0.3s ease;
-}
-
-tr.usina-header td:hover {
-  background-position: right center;
-  background-image: linear-gradient(90deg, var(--azul-claro) 0%, var(--verde) 100%);
-  transform: scale(1.02);
-}
-
-/* Checkbox */
-input[type="checkbox"] {
-  transform: scale(1.2);
-  accent-color: var(--verde);
-}
-
-/* Botão customizado de upload */
 .custom-file-label {
   display: inline-block;
-  background: linear-gradient(90deg, var(--azul) 0%, var(--verde) 100%);
+  background: linear-gradient(90deg, var(--azul-principal), var(--azul-claro));
   color: var(--branco);
-  font-weight: 600;
   padding: 0.6em 1.5em;
   border-radius: 7px;
   cursor: pointer;
-  font-size: 1.05em;
-  margin-bottom: 1em;
+  font-weight: 600;
   box-shadow: 0 2px 8px #0001;
   transition: background 0.6s, transform 0.2s, box-shadow 0.2s;
-  border: none;
-  outline: none;
 }
 
-.custom-file-label:hover,
-.custom-file-label:focus {
-  background: linear-gradient(90deg, var(--verde-claro) 0%, var(--azul-claro) 100%);
+.custom-file-label:hover {
+  background: linear-gradient(90deg, #0096c7, #00b4d8);
   transform: scale(1.04) translateY(-2px);
-  box-shadow: 0 6px 16px #0002;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-.custom-file-label:active {
-  background: linear-gradient(90deg, var(--verde) 0%, var(--azul) 100%);
-  transform: scale(0.98);
-}
-
-/* Botão “Apagar todas as informações” */
+/* 🧯 Botão “Apagar todas as informações” */
 #btnLimpar {
   float: right;
   margin-bottom: 1em;
@@ -198,7 +90,6 @@ input[type="checkbox"] {
   transition: background 0.6s, transform 0.2s, box-shadow 0.2s;
 }
 
-/* Efeito hover e foco */
 #btnLimpar:hover,
 #btnLimpar:focus {
   background: linear-gradient(90deg, #ff4d4d 0%, #c82333 100%);
@@ -206,9 +97,79 @@ input[type="checkbox"] {
   box-shadow: 0 6px 16px rgba(255, 0, 0, 0.25);
 }
 
-/* Efeito de clique */
 #btnLimpar:active {
   background: linear-gradient(90deg, #c82333 0%, #7a0000 100%);
   transform: scale(0.98);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Filtros ===== */
+.filtros {
+  margin-bottom: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+
+.filtros input,
+.filtros select {
+  padding: 0.5em 0.8em;
+  border-radius: 6px;
+  border: 1px solid var(--cinza-medio);
+  font-size: 0.95em;
+}
+
+/* ===== Tabela ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5em;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+thead {
+  background: var(--azul-principal);
+  color: var(--branco);
+}
+
+th, td {
+  padding: 0.8em;
+  text-align: left;
+  border-bottom: 1px solid var(--cinza-medio);
+}
+
+tbody tr:hover {
+  background: #f1f3f5;
+  transition: background 0.3s;
+}
+
+/* Linhas de usina destacadas */
+tr.usina-header td {
+  background: linear-gradient(90deg, var(--verde), var(--azul-claro));
+  color: var(--branco);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Responsividade ===== */
+@media (max-width: 768px) {
+  main {
+    padding: 1.2em;
+  }
+
+  table {
+    font-size: 0.9em;
+  }
+
+  .filtros {
+    flex-direction: column;
+  }
+
+  #btnLimpar {
+    width: 100%;
+    float: none;
+  }
 }

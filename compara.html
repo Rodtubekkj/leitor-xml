@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Comparador de Documentos - Dulcini</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <img src="img/logo-dulcini.avif" alt="Dulcini" style="max-width:220px;max-height:70px;">
+    <div>
+      <h1>🔍 Comparador Dulcini & Centrosucar</h1>
+      <div style="font-size:0.9rem;color:#556">Conferência entre duas NF (XML) e laudo (CSV) — validade por código de produto</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="upload-area">
+      <label for="xml1" class="custom-file-label" tabindex="0">Nota Fiscal 1 (XML) - Centrosucar</label>
+      <input type="file" id="xml1" accept=".xml">
+
+      <label for="xml2" class="custom-file-label" tabindex="0">Nota Fiscal 2 (XML) - Dulcini</label>
+      <input type="file" id="xml2" accept=".xml">
+
+      <label for="csv" class="custom-file-label" tabindex="0">Laudo (CSV)</label>
+      <input type="file" id="csv" accept=".csv">
+    </div>
+
+    <table id="resultado" class="compact-table">
+      <thead>
+        <tr>
+          <th>Campo</th>
+          <th>Nota 1</th>
+          <th>Nota 2</th>
+          <th>Laudo</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    
+    <!-- Tabela separada para informações do produto e validade -->
+    <h3 style="margin-top:16px;">Informações do Produto</h3>
+    <table id="produto-info" class="compact-table">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Data da Fabricação</th>
+          <th>Data de Validade</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <footer style="text-align:center;padding:1em;color:#7a9;">© 2025 Dulcini & Centrosucar</footer>
+
+  <script src="js/comparador.js"></script>
+  <script>
+    // acessibilidade: permite abrir o seletor de arquivos com Enter ou Espaço nas labels
+    document.querySelectorAll('.custom-file-label').forEach(lbl => {
+      lbl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          const id = this.getAttribute('for');
+          const input = document.getElementById(id);
+          if (input) input.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

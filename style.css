@@ -164,6 +164,49 @@ tr.usina-header td:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== CSS extra movido de compara.html (compact tables e ajustes) ===== */
+.compact-table { table-layout: fixed; max-width: 760px; margin: 10px auto; font-size:0.9rem; }
+.compact-table thead th, .compact-table tbody td { padding:6px 6px; font-size:0.9rem }
+.compact-table thead th { font-weight:700 }
+.compact-table td { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.ok { color:green; font-weight:700 }
+.erro { color:red; font-weight:700 }
+
+/* produto-info compact */
+#produto-info { width: auto; margin: 12px auto; max-width: 560px; font-size:0.95rem; }
+#produto-info thead th, #produto-info tbody td { padding:6px 8px; }
+#produto-info td { text-align:center }
+#produto-info thead th { background:#2a5f9a }
+
+/* resultado specific compacting */
+#resultado { max-width: 100%; }
+#resultado thead th, #resultado tbody td { padding:6px 6px; font-size:0.92rem }
+#resultado thead th { font-weight:700 }
+
+/* column width tuning */
+#resultado { table-layout: fixed; }
+#resultado th:first-child, #resultado td:first-child { width: 28%; text-align:left; padding-left:10px }
+#resultado th:nth-child(2), #resultado td:nth-child(2),
+#resultado th:nth-child(3), #resultado td:nth-child(3),
+#resultado th:nth-child(4), #resultado td:nth-child(4),
+#resultado th:nth-child(5), #resultado td:nth-child(5) { width: 18%; }
+#resultado td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+
+#produto-info { width: auto; margin: 12px auto; max-width: 560px; font-size:0.95rem; table-layout:fixed }
+#produto-info thead th, #produto-info tbody td { padding:6px 8px; }
+#produto-info td { text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#produto-info thead th { background:#2a5f9a }
+#produto-info thead th:first-child, #produto-info tbody td:first-child { width:45%; text-align:left; padding-left:10px }
+#produto-info thead th:nth-child(2), #produto-info tbody td:nth-child(2) { width:25% }
+#produto-info thead th:nth-child(3), #produto-info tbody td:nth-child(3) { width:20% }
+#produto-info thead th:nth-child(4), #produto-info tbody td:nth-child(4) { width:10% }
+
+/* small-screen adjustments for compact tables */
+@media (max-width: 600px) {
+  .compact-table, #produto-info { max-width: 95%; font-size:0.85rem }
+  #resultado th:first-child, #resultado td:first-child { width: 40%; }
+  #resultado th:nth-child(n+2), #resultado td:nth-child(n+2) { width: auto }
+}
 
 
 

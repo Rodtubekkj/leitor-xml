@@ -239,6 +239,7 @@
 
           const usina = getTag(['emit','xFant']);
           let qCom = getTag(['det','prod','qCom']);
+          let uCom = getTag(['det','prod','uCom']); // extrair unidade
           let valorUnit = getTag(['det','prod','vUnCom']);
           let valorTot = getTag(['det','prod','vProd']);
           let pesoLiq = qCom;
@@ -249,15 +250,15 @@
           let vUnit = parseFloat((valorUnit || '0').replace(',', '.'));
           let vTot = parseFloat((valorTot || '0').replace(',', '.'));
 
-          // Detectar se qCom está em kg ou toneladas
-            if (qtd > 1000) {
-          // tipo 1: qCom em kg, vUnCom em R$/kg
-            pesoLiq = qtd / 1000; // converter para toneladas
+          // Converter para toneladas conforme unidade informada
+          if (uCom && uCom.toUpperCase() === 'KG') {
+            // Se a unidade é KG, converte para toneladas
+            pesoLiq = qtd / 1000;
             vUnit = vUnit * 1000; // converter R$/kg → R$/t
-            } else {
-          // tipo 2: qCom já em toneladas, vUnCom em R$/t
+          } else {
+            // Caso contrário, assume que já está em toneladas
             pesoLiq = qtd;
-}
+          }
 
           // Formatando valores
             pesoLiq = pesoLiq.toLocaleString('pt-BR', { minimumFractionDigits:3, maximumFractionDigits:3 });
@@ -283,4 +284,3 @@
   </script>
 </body>
 </html>
-

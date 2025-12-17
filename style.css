@@ -133,7 +133,7 @@ tr.usina-header td:hover {
      /* Botão customizado para input file */
   .custom-file-label {
   display: inline-block;
-  background: linear-gradient(90deg, var(--verde-claro) 0%, var(--azul-claro) 100%);
+  background:  linear-gradient(90deg,rgba(6, 43, 102, 1) 8%, rgba(44, 158, 147, 1) 90%);  
   color: var(--branco);
   font-weight: 600;
   padding: 0.6em 1.5em;
@@ -176,7 +176,7 @@ tr.usina-header td:hover {
 #produto-info { width: auto; margin: 12px auto; max-width: 560px; font-size:0.95rem; }
 #produto-info thead th, #produto-info tbody td { padding:6px 8px; }
 #produto-info td { text-align:center }
-#produto-info thead th { background:#2a5f9a }
+#produto-info thead th { background:var(--azul-claro) }
 
 /* resultado specific compacting */
 #resultado { max-width: 100%; }
@@ -195,7 +195,7 @@ tr.usina-header td:hover {
 #produto-info { width: auto; margin: 12px auto; max-width: 560px; font-size:0.95rem; table-layout:fixed }
 #produto-info thead th, #produto-info tbody td { padding:6px 8px; }
 #produto-info td { text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-#produto-info thead th { background:#2a5f9a }
+#produto-info thead th { background:var(--azul-claro)}
 #produto-info thead th:first-child, #produto-info tbody td:first-child { width:45%; text-align:left; padding-left:10px }
 #produto-info thead th:nth-child(2), #produto-info tbody td:nth-child(2) { width:25% }
 #produto-info thead th:nth-child(3), #produto-info tbody td:nth-child(3) { width:20% }
@@ -207,7 +207,68 @@ tr.usina-header td:hover {
   #resultado th:first-child, #resultado td:first-child { width: 40%; }
   #resultado th:nth-child(n+2), #resultado td:nth-child(n+2) { width: auto }
 }
+.upload-area{
+  color:var(--azul-claro)
+}
 
+.upload-area .custom-file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 220px;
+  max-width: 100%;
+  padding: 0.45em 0.7em;
+  font-size: 0.9rem;
+  margin: 0 0 0.6em 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px #0001;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
+/* Garantir cores específicas apenas para a área de upload do compara.html */
+.upload-area .custom-file-label {
+ background:  linear-gradient(90deg,rgba(6, 43, 102, 1) 8%, rgba(44, 158, 147, 1) 90%);  
+  color: var(--branco);
+  font-weight: 600;
+}
+.upload-area .custom-file-label:hover,
+.upload-area .custom-file-label:focus {
+  background-image: linear-gradient(90deg, var(--azul) 0%, var(--verde) 100%);
+  background-position: right center;
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+/* badge que mostra arquivo(s) selecionado(s) ao lado da label */
+.custom-file-label .file-chosen {
+  display: block;
+  margin-top: 0.45em;
+  font-size: 0.85rem;
+  padding: 0.12em 0.45em;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.95);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.custom-file-label .file-chosen.ok {
+  background: rgba(27,179,106,0.18);
+  color: #eafaf0;
+  box-shadow: 0 1px 6px rgba(27,179,106,0.12);
+}
+
+/* Em telas pequenas, badge fica depois em nova linha para legibilidade */
+@media (max-width: 600px) {
+  .upload-area .custom-file-label { width: 100%; padding-right: 0.8em }
+  .custom-file-label .file-chosen { display: block; max-width: 100%; margin-left: 0; margin-top: 0.35em }
+}
+
+@media (max-width: 600px) {
+  .upload-area .custom-file-label { width: 100%; padding: 0.5em 0.8em; font-size: 0.95rem }
+}
 
 

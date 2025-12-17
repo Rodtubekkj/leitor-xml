@@ -8,20 +8,19 @@
 </head>
 <body>
   <header>
-    <img src="img/logo-dulcini.avif" alt="Dulcini" style="max-width:220px;max-height:70px;">
+    <img src="img/logo-dulcini.png" alt="Dulcini" style="max-width:220px;max-height:70px;">
     <div>
-      <h1>🔍 Comparador Dulcini & Centrosucar</h1>
-      <div style="font-size:0.9rem;color:#556">Conferência entre duas NF (XML) e laudo (CSV) — validade por código de produto</div>
+      <div style="font-size:1.5rem;color:#556">Conferência de documentos - Double check</div>
     </div>
-     <a href="index.html" style="position:absolute;top:1.5em;right:1.5em;background:#1bb36a;color:#fff;padding:0.6em 1.2em;border-radius:6px;text-decoration:none;font-weight:600;transition:all 0.3s ease;display:flex;align-items:center;gap:0.5em;" onmouseover="this.style.background='#3be88a'" onmouseout="this.style.background='#1bb36a'"><img src="img/icon home.png" alt="Home" style="width:20px;height:20px;"> Home</a>
+    <a href="index.html" style="position:absolute;top:1.5em;right:1.5em;background:#1bb36a;color:#fff;padding:0.6em 1.2em;border-radius:6px;text-decoration:none;font-weight:600;transition:all 0.3s ease;display:flex;align-items:center;gap:0.5em;" onmouseover="this.style.background='#3be88a'" onmouseout="this.style.background='#1bb36a'"><img src="img/icon home.png" alt="Home" style="width:20px;height:20px;"> Home</a>
   </header>
 
   <main>
     <div class="upload-area">
-      <label for="xml1" class="custom-file-label" tabindex="0">Nota Fiscal 1 (XML) - Centrosucar</label>
+      <label for="xml1" class="custom-file-label" tabindex="0">Nota Fiscal 1 - Centrosucar</label>
       <input type="file" id="xml1" accept=".xml">
 
-      <label for="xml2" class="custom-file-label" tabindex="0">Nota Fiscal 2 (XML) - Dulcini</label>
+      <label for="xml2" class="custom-file-label" tabindex="0">Nota Fiscal 2 - Dulcini</label>
       <input type="file" id="xml2" accept=".xml">
 
       <label for="csv" class="custom-file-label" tabindex="0">Laudo (CSV)</label>
@@ -36,6 +35,7 @@
           <th>Nota 2</th>
           <th>Laudo</th>
           <th>Resultado</th>
+          <th>Lacres</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -56,7 +56,7 @@
     </table>
   </main>
 
-  <footer style="text-align:center;padding:1em;color:#7a9;">© 2025 Dulcini & Centrosucar</footer>
+  <footer style="text-align:center;padding:1em;color:#7a9;">© 2025 Dulcini & Centrosucar. Desenvolvido por Julio Davi</footer>
 
   <script src="js/comparador.js"></script>
   <script>

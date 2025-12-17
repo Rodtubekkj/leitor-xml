@@ -197,6 +197,10 @@ function normalizaNota(n) {
           const nNF = findTagText(xml, 'nNF') || findTagText(xml, 'NFNumero') || findTagText(xml, 'numero');
           const pesoL = findTagText(xml, 'pesoL') || findTagText(xml, 'pesoLiquido') || '';
           const pesoB = findTagText(xml, 'pesoB') || findTagText(xml, 'pesoBruto') || '';
+          // Extrai lacres
+          let lacres = findTagText(xml, 'infCpl') || '';
+          const lacresMatch = lacres.match(/Lacres?:\s*([0-9-]+)/i);
+          lacres = lacresMatch ? lacresMatch[1].trim() : '';
           // Extrai preferencialmente a placa da carreta/trailer
           let placa = '';
           const placas = xml.getElementsByTagName('placa');
@@ -231,12 +235,12 @@ function normalizaNota(n) {
               }
             }
           }
-          resolve({ nNF, pesoL, pesoB, placa });
+          resolve({ nNF, pesoL, pesoB, placa, lacres });
         } catch (err) {
-          resolve({ nNF: "", pesoL: "", pesoB: "", placa: "" });
+          resolve({ nNF: "", pesoL: "", pesoB: "", placa: "", lacres: "" });
         }
       };
-      reader.onerror = () => resolve({ nNF: "", pesoL: "", pesoB: "", placa: "" });
+      reader.onerror = () => resolve({ nNF: "", pesoL: "", pesoB: "", placa: "", lacres: "" });
       reader.readAsText(file);
     });
   }
@@ -263,12 +267,12 @@ function normalizaNota(n) {
 
   function parseCSV(file) {
     return new Promise((resolve) => {
-      if (!file) return resolve({ nota: '', placa: '', data: '', codigoProd: '', validade: '' });
+      if (!file) return resolve({ nota: '', placa: '', data: '', codigoProd: '', validade: '', lacres: '' });
       const reader = new FileReader();
       reader.onload = e => {
         const texto = e.target.result.replace(/\r/g, '');
         const linhas = texto.split('\n');
-        let nota = '', placa = '', data = '', codigoProd = '';
+        let nota = '', placa = '', data = '', codigoProd = '', lacres = '';
         for (let i = 0; i < linhas.length; i++) {
           const l = linhas[i].trim();
           if (!l) continue;
@@ -289,9 +293,13 @@ function normalizaNota(n) {
             const d = l.match(/(\d{2}\/\d{2}\/\d{4})/);
             if (d) data = d[0];
           }
+          if (!lacres && /lacres?/i.test(l)) {
+            const m = l.match(/Lacres?:\s*([0-9-]+)/i);
+            if (m) lacres = m[1].trim();
+          }
         }
         const validade = validadePorCodigo(codigoProd, data);
-        resolve({ nota, placa, data, codigoProd, validade });
+        resolve({ nota, placa, data, codigoProd, validade, lacres });
       };
       reader.onerror = () => resolve({ nota: '', placa: '', data: '', codigoProd: '', validade: '' });
       reader.readAsText(file, 'UTF-8');
@@ -343,13 +351,22 @@ function normalizaNota(n) {
     laudo.placa = normalizaPlaca(laudo.placa);
 
     const NA = 'N/A';
+    const lacresMatch = ((nf1.lacres === laudo.lacres || nf2.lacres === laudo.lacres) && laudo.lacres) ? 'ok' : (laudo.lacres ? 'erro' : 'N/A');
+    
     const linhas = [
       // Nota 2 deve aparecer como N/A conforme solicitado
-      ['Nota Fiscal', nf1.nNF || NA, NA, laudo.nota || NA, (normalizaNota(nf1.nNF) === normalizaNota(laudo.nota)) ? 'ok' : 'erro'],
-      ['Peso Líquido (kg)', pesoL1 || NA, pesoL2 || NA, NA, floatEq(pesoL1, pesoL2) ? 'ok' : 'erro'],
-      ['Peso Bruto (kg)', pesoB1 || NA, pesoB2 || NA, NA, floatEq(pesoB1, pesoB2) ? 'ok' : 'erro'],
-      ['Placa da Carreta', nf1.placa || NA, nf2.placa || NA, laudo.placa || NA, (normalizaPlaca(nf1.placa) === normalizaPlaca(laudo.placa) || normalizaPlaca(nf2.placa) === normalizaPlaca(laudo.placa)) ? 'ok' : 'erro']
+      ['Nota Fiscal', nf1.nNF || NA, NA, laudo.nota || NA, (normalizaNota(nf1.nNF) === normalizaNota(laudo.nota)) ? 'ok' : 'erro', ''],
+      ['Peso Líquido (kg)', pesoL1 || NA, pesoL2 || NA, NA, floatEq(pesoL1, pesoL2) ? 'ok' : 'erro', ''],
+      ['Peso Bruto (kg)', pesoB1 || NA, pesoB2 || NA, NA, floatEq(pesoB1, pesoB2) ? 'ok' : 'erro', ''],
+      ['Placa da Carreta', nf1.placa || NA, nf2.placa || NA, laudo.placa || NA, (normalizaPlaca(nf1.placa) === normalizaPlaca(laudo.placa) || normalizaPlaca(nf2.placa) === normalizaPlaca(laudo.placa)) ? 'ok' : 'erro', ''],
+      ['Lacres', nf1.lacres || NA, nf2.lacres || NA, laudo.lacres || NA, lacresMatch, '']
     ];
+
+    const lacresData = {
+      nota1: nf1.lacres || 'N/A',
+      nota2: nf2.lacres || 'N/A',
+      laudo: laudo.lacres || 'N/A'
+    };
 
     const produtoInfo = {
       produto: laudo.codigoProd || NA,
@@ -368,12 +385,44 @@ function normalizaNota(n) {
     const resultadoTbody = document.querySelector('#resultado tbody');
     const inputs = [inputXml1, inputXml2, inputCsv].filter(Boolean);
 
+    // Atualiza a label com confirmação do(s) arquivo(s) selecionado(s)
+    const setLabelFiles = (input) => {
+      if (!input) return;
+      const lbl = document.querySelector(`label[for="${input.id}"]`);
+      if (!lbl) return;
+      let badge = lbl.querySelector('.file-chosen');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'file-chosen';
+        lbl.appendChild(badge);
+      }
+      const files = input.files;
+      if (!files || files.length === 0) {
+        badge.textContent = 'nenhum arquivo selecionado';
+        badge.classList.remove('ok');
+        badge.title = '';
+      } else if (files.length === 1) {
+        badge.textContent = `${files[0].name}`;
+        badge.classList.add('ok');
+        badge.title = files[0].name;
+      } else {
+        badge.textContent = `${files.length} arquivo(s)`;
+        badge.classList.add('ok');
+        // título com primeiros nomes para referência
+        const names = Array.from(files).slice(0,4).map(f => f.name).join('\n');
+        badge.title = `${files.length} arquivos selecionados:\n${names}`;
+      }
+    };
+
+    // inicializa as labels (caso já haja arquivos selecionados por algum motivo)
+    inputs.forEach(i => setLabelFiles(i));
+
     const showRows = (linhas) => {
       if (!resultadoTbody) return;
       resultadoTbody.innerHTML = '';
       linhas.forEach(l => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${l[0]}</td><td>${l[1]}</td><td>${l[2]}</td><td>${l[3]}</td><td class="${l[4]}">${l[4] === 'ok' ? '🟢' : l[4] === 'erro' ? '🔴' : ''}</td>`;
+        tr.innerHTML = `<td>${l[0]}</td><td>${l[1]}</td><td>${l[2]}</td><td>${l[3]}</td><td class="${l[4]}">${l[4] === 'ok' ? '🟢' : l[4] === 'erro' ? '🔴' : ''}</td><td></td>`;
         resultadoTbody.appendChild(tr);
       });
     };
@@ -402,7 +451,14 @@ function normalizaNota(n) {
 
     // Debounce simples
     let tId = null;
-    inputs.forEach(inp => inp.addEventListener('change', () => { clearTimeout(tId); tId = setTimeout(handler, 150); }));
+    inputs.forEach(inp => {
+      inp.addEventListener('change', () => {
+        // atualiza a confirmação visual imediatamente
+        setLabelFiles(inp);
+        clearTimeout(tId);
+        tId = setTimeout(handler, 150);
+      });
+    });
   });
 
   // export functions for debugging (optional)

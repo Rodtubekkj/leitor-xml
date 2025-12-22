@@ -42,16 +42,15 @@
     </table>
     
     <!-- Tabela separada para informações do produto e validade -->
-    <h3 style="margin-top:16px;">Informações do Produto</h3>
+   <h3 style="margin-top:16px;">Informações do Produto</h3>
+    <div style="max-width:720px;margin:0.4em 0 0.6em 0;padding:0 1em;display:flex;gap:0.8em;align-items:center;">
+      <label style="display:flex;align-items:center;gap:0.4em;" id="fracionado-container">
+        <input type="checkbox" id="fracionado-checkbox" style="display:inline-block"> Fracionado
+      </label>
+      <label id="envase-container" style="display:none;align-items:center;gap:0.4em;">Data de Envase: <input type="date" id="data-envase"></label>
+    </div>
     <table id="produto-info" class="compact-table">
       <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Data da Fabricação</th>
-          <th>Data de Validade</th>
-          <th>Resultado</th>
-        </tr>
-      </thead>
       <tbody></tbody>
     </table>
   </main>

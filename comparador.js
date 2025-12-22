@@ -98,6 +98,30 @@ function validadePorCodigo(codigo, dataProducao) {
    LEITOR CSV (LAUDO)
 ---------------------------- */
 
+function addDays(dateStr, days) {
+  if (!dateStr) return '';
+  if (dateStr.indexOf('-') >= 0) {
+    const parts = dateStr.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return '';
+    const [y, m, d] = parts;
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + Number(days));
+    const dd = String(dt.getDate()).padStart(2, '0');
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const yy = String(dt.getFullYear());
+    return `${dd}/${mm}/${yy}`;
+  }
+  const parts = dateStr.split('/').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return '';
+  const [d, m, y] = parts;
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + Number(days));
+  const dd = String(dt.getDate()).padStart(2, '0');
+  const mm = String(dt.getMonth() + 1).padStart(2, '0');
+  const yy = String(dt.getFullYear());
+  return `${dd}/${mm}/${yy}`;
+}
+
 function parseCSV(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -105,7 +129,19 @@ function parseCSV(file) {
       const texto = e.target.result;
       const linhas = texto.split(/\r?\n/);
 
-      let nota = "", placa = "", data = "", codigoProd = "";
+      let nota = "", placa = "", dataFabricacao = "", dataValidade = "", codigoProd = "";
+
+      const normalizeDate = (raw) => {
+        const parts = raw.split('/');
+        if (parts.length !== 3) return raw;
+        let [d, m, y] = parts.map(s => s.trim());
+        if (y.length === 2) y = '20' + y;
+        return `${d}/${m}/${y}`;
+      };
+
+      
+
+      let prazoDias = null;
 
       linhas.forEach(l => {
         if (/nota/i.test(l)) {
@@ -118,19 +154,36 @@ function parseCSV(file) {
           if (m) placa = m[0].toUpperCase();
         }
 
-        if (/produto/i.test(l)) {
-          const partes = l.split(";");
-          const valor = partes.find(p => /^\d+$/.test(p.trim()));
-          if (valor) codigoProd = valor.trim();
+        if (/produto/i.test(l) && !codigoProd) {
+          const partes = l.split(";").map(p => p.trim());
+          const valor = partes.map(p => { const m = p.match(/\d+/); return m ? m[0] : null; }).find(Boolean);
+          if (valor) codigoProd = valor;
         }
 
-        const dataEncontrada = l.match(/(\d{2}\/\d{2}\/\d{4})/);
-        if (dataEncontrada && !data) {
-          data = dataEncontrada[0];
+        const dateMatch = l.match(/(\d{2}\/\d{2}\/\d{2,4})/);
+        if (dateMatch) {
+          const norm = normalizeDate(dateMatch[1]);
+          if (/data\s*de\s*validade|data\s*validade/i.test(l)) {
+            if (!dataValidade) dataValidade = norm;
+          } else if (/data\s*(de\s*)?(carregamento|fabricacao|fabrica|fabricação|fabrication)/i.test(l) || /data\s*de\s*carregamento/i.test(l)) {
+            if (!dataFabricacao) dataFabricacao = norm;
+          } else {
+            if (!dataFabricacao) dataFabricacao = norm;
+          }
+        }
+        // detecta 'Prazo de Validade' em formatos como 'Prazo de Validade;;7 DIAS' ou 'Prazo de Validade: 7 dias'
+        if (prazoDias === null) {
+          const p = l.match(/prazo[^\d]*(\d{1,3})\s*dia/i) || l.match(/(\d{1,3})\s*DIAS/i);
+          if (p && p[1]) prazoDias = Number(p[1]);
         }
       });
 
-      const validade = validadePorCodigo(codigoProd, data);
+      const data = dataFabricacao;
+      let validade = '';
+      if (prazoDias !== null && data) {
+        validade = addDays(data, prazoDias);
+      }
+      if (!validade) validade = dataValidade || validadePorCodigo(codigoProd, data);
 
       resolve({ nota, placa, data, codigoProd, validade });
     };
@@ -185,10 +238,10 @@ function normalizaNota(n) {
   };
 
   const floatEq = (a, b, eps = 0.001) => Math.abs(Number(a || 0) - Number(b || 0)) <= eps;
-
+ 
   function parseXML(file) {
     return new Promise((resolve, reject) => {
-      if (!file) return resolve({ nNF: "", pesoL: "", pesoB: "", placa: "" });
+      if (!file) return resolve({ nNF: "", pesoL: "", pesoB: "", placa: "", lacres: "" });
       const reader = new FileReader();
       reader.onload = e => {
         try {
@@ -197,11 +250,9 @@ function normalizaNota(n) {
           const nNF = findTagText(xml, 'nNF') || findTagText(xml, 'NFNumero') || findTagText(xml, 'numero');
           const pesoL = findTagText(xml, 'pesoL') || findTagText(xml, 'pesoLiquido') || '';
           const pesoB = findTagText(xml, 'pesoB') || findTagText(xml, 'pesoBruto') || '';
-          // Extrai lacres
           let lacres = findTagText(xml, 'infCpl') || '';
           const lacresMatch = lacres.match(/Lacres?:\s*([0-9-]+)/i);
           lacres = lacresMatch ? lacresMatch[1].trim() : '';
-          // Extrai preferencialmente a placa da carreta/trailer
           let placa = '';
           const placas = xml.getElementsByTagName('placa');
           if (placas && placas.length > 1) {
@@ -223,7 +274,6 @@ function normalizaNota(n) {
           }
           if (!placa) {
             const infCpl = findTagText(xml, 'infCpl') || '';
-            // procura rótulos explícitos primeiro
             let m = infCpl.match(/Carreta[:\s]*([A-Z]{3}-?\d[A-Z0-9]{3}(?:\/[A-Z]{2})?)/i);
             if (m && m[1]) placa = m[1].toUpperCase();
             else {
@@ -272,7 +322,19 @@ function normalizaNota(n) {
       reader.onload = e => {
         const texto = e.target.result.replace(/\r/g, '');
         const linhas = texto.split('\n');
-        let nota = '', placa = '', data = '', codigoProd = '', lacres = '';
+        let nota = '', placa = '', dataFabricacao = '', dataValidade = '', codigoProd = '', lacres = '';
+
+        const normalizeDate = (raw) => {
+          const parts = raw.split('/');
+          if (parts.length !== 3) return raw;
+          let [d, m, y] = parts.map(s => s.trim());
+          if (y.length === 2) y = '20' + y;
+          return `${d}/${m}/${y}`;
+        };
+        
+
+        let prazoDias = null;
+
         for (let i = 0; i < linhas.length; i++) {
           const l = linhas[i].trim();
           if (!l) continue;
@@ -286,19 +348,35 @@ function normalizaNota(n) {
           }
           if (!codigoProd && /produto/i.test(l)) {
             const partes = l.split(/[,;\t]/).map(s => s.trim());
-            const valor = partes.find(p => /^\d+$/.test(p));
+            const valor = partes.map(p => { const m = p.match(/\d+/); return m ? m[0] : null; }).find(v => v);
             if (valor) codigoProd = valor;
           }
-          if (!data) {
-            const d = l.match(/(\d{2}\/\d{2}\/\d{4})/);
-            if (d) data = d[0];
+          const dateMatch = l.match(/(\d{2}\/\d{2}\/\d{2,4})/);
+          if (dateMatch) {
+            const norm = normalizeDate(dateMatch[1]);
+            if (/data\s*de\s*validade|data\s*validade/i.test(l)) {
+              if (!dataValidade) dataValidade = norm;
+            } else if (/data\s*(de\s*)?(carregamento|fabricacao|fabrica|fabricação)/i.test(l) || /data\s*de\s*carregamento/i.test(l)) {
+              if (!dataFabricacao) dataFabricacao = norm;
+            } else {
+              if (!dataFabricacao) dataFabricacao = norm;
+            }
+          }
+          if (prazoDias === null) {
+            const p = l.match(/prazo[^\d]*(\d{1,3})\s*dia/i) || l.match(/(\d{1,3})\s*DIAS/i);
+            if (p && p[1]) prazoDias = Number(p[1]);
           }
           if (!lacres && /lacres?/i.test(l)) {
             const m = l.match(/Lacres?:\s*([0-9-]+)/i);
             if (m) lacres = m[1].trim();
           }
         }
-        const validade = validadePorCodigo(codigoProd, data);
+        const data = dataFabricacao;
+        let validade = '';
+        if (prazoDias !== null && data) {
+          validade = addDays(data, prazoDias);
+        }
+        if (!validade) validade = dataValidade || validadePorCodigo(codigoProd, data);
         resolve({ nota, placa, data, codigoProd, validade, lacres });
       };
       reader.onerror = () => resolve({ nota: '', placa: '', data: '', codigoProd: '', validade: '' });
@@ -371,7 +449,8 @@ function normalizaNota(n) {
     const produtoInfo = {
       produto: laudo.codigoProd || NA,
       dataFabricacao: laudo.data || NA,
-      dataValidade: laudo.validade || NA
+      dataValidade: laudo.validade || NA,
+      fracionado: laudo.fracionado || false
     };
 
     return { linhas, produtoInfo };
@@ -428,6 +507,12 @@ function normalizaNota(n) {
     };
 
     const produtoTbody = document.querySelector('#produto-info tbody');
+    const fracionadoCheckbox = document.getElementById('fracionado-checkbox');
+    const envaseInput = document.getElementById('data-envase');
+    const envaseContainer = document.getElementById('envase-container');
+    const fracionadoContainer = document.getElementById('fracionado-container');
+    let fracionadoUserOverride = false;
+
     const showProductInfo = (info) => {
       if (!produtoTbody) return;
       produtoTbody.innerHTML = '';
@@ -436,6 +521,16 @@ function normalizaNota(n) {
       const status = 'ok';
       tr.innerHTML = `<td>${info.produto}</td><td>${info.dataFabricacao}</td><td>${info.dataValidade}</td><td class="${status}">${'🟢'}</td>`;
       produtoTbody.appendChild(tr);
+
+      // mostra checkbox e campo de envase apenas para códigos 201 e 223
+      const codeNum = Number(info.produto);
+      if (fracionadoContainer) fracionadoContainer.style.display = (codeNum === 201 || codeNum === 223 || codeNum === 250 || codeNum === 290 || codeNum === 300) ? 'inline-flex' : 'none';
+      if (fracionadoCheckbox) {
+        // preserva escolha do usuário se ele já tiver alterado o checkbox
+        if (!fracionadoUserOverride) fracionadoCheckbox.checked = !!info.fracionado;
+        // se marcado, mostra campo de envase
+        if (envaseContainer) envaseContainer.style.display = fracionadoCheckbox.checked ? 'inline-flex' : 'none';
+      }
     };
 
     const handler = async () => {
@@ -446,26 +541,65 @@ function normalizaNota(n) {
       const result = await compararFiles(f1, f2, fc);
       // result contains { linhas, produtoInfo }
       showRows(result.linhas);
-      showProductInfo(result.produtoInfo);
+
+      // aplicar regras especiais para fracionados: usar data de envase + X dias conforme código
+      const prod = Object.assign({}, result.produtoInfo);
+      const codeNum = Number(prod.produto);
+      
+      let fractionedDays = null;
+      if (codeNum === 201 || codeNum === 223) fractionedDays = 90;
+      else if (codeNum === 250 || codeNum === 290) fractionedDays = 30;
+      else if (codeNum === 300) fractionedDays = 180;
+      
+      const canUseEnvase = (fractionedDays !== null);
+      const userFracionado = fracionadoCheckbox ? fracionadoCheckbox.checked : false;
+      const laudoFracionado = prod.fracionado;
+      if (canUseEnvase && (userFracionado || laudoFracionado)) {
+        const envDate = envaseInput && envaseInput.value ? envaseInput.value : '';
+        if (envDate) {
+          // envDate is yyyy-mm-dd from input, addDays handles that format
+          prod.dataValidade = addDays(envDate, fractionedDays);
+        }
+      }
+
+      showProductInfo(prod);
     };
 
     // Debounce simples
     let tId = null;
     inputs.forEach(inp => {
       inp.addEventListener('change', () => {
+        // reset user override when user loads new files
+        fracionadoUserOverride = false;
         // atualiza a confirmação visual imediatamente
         setLabelFiles(inp);
         clearTimeout(tId);
         tId = setTimeout(handler, 150);
       });
     });
+
+    // permite alternar visibilidade do campo de envase quando usuário marca/desmarca e recalcula
+    if (fracionadoCheckbox) {
+      fracionadoCheckbox.addEventListener('change', (e) => {
+        // marca que usuário alterou manualmente o checkbox
+        fracionadoUserOverride = true;
+        if (envaseContainer) envaseContainer.style.display = e.target.checked ? 'inline-flex' : 'none';
+        clearTimeout(tId);
+        tId = setTimeout(handler, 10);
+      });
+    }
+
+    if (envaseInput) {
+      envaseInput.addEventListener('change', () => {
+        clearTimeout(tId);
+        tId = setTimeout(handler, 10);
+      });
+    }
   });
 
+  // export functions for debugging (optional)
   // export functions for debugging (optional)
   window.__comparador = { parseXML, parseCSV, normalizaPeso, validadePorCodigo };
 
 })();
-
-
-
 

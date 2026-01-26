@@ -162,13 +162,17 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #1bb36a 0%, #3be88a 100%);
+  background: rgba(27, 179, 106, 0.2);
   color: var(--branco);
+  border: 2px solid rgba(27, 179, 106, 0.4);
+  backdrop-filter: blur(10px);
 }
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(27, 179, 106, 0.4);
+  border-color: rgba(27, 179, 106, 0.8);
+  background: rgba(27, 179, 106, 0.3);
+  box-shadow: 0 8px 25px rgba(27, 179, 106, 0.3);
 }
 
 .btn-secondary {
